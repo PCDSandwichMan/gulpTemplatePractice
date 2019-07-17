@@ -7,6 +7,13 @@
     2) install you dependencies
     3) create your gulp file
         1) require your dependencies
+        2) create your rootFile location and other common file locations that can be used for the next step
+        3) group your files together in variables and as DRY, clean, and clear as possible for what you would like to be done to the group of files
+        4) write you functions for your tasks
+        5) export your function (tasks)
+        6) create your final parallel variable 
+        7) set a gulp task to 'default' and uses your predefined parallel variable
+
 
 
 <!-- * Shortcuts -->

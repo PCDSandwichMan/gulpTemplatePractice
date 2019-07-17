@@ -59,6 +59,75 @@ var imgSRC = root + 'src/images/*',
 // These are placed in function so that that can be exported and specified to run in parallel() or series()
 
     // * Basic syntax will consist of selecting your file 'gulp.src' changing your information one at a time 'gulp.pipe' and finally piping that information to a new destination '.pipe(gulp.dest(../rootDistFile))' usually being your new production build
+        // * The array is used to select multiple files to adjust
+        // * While the gulp syntax is straight forward the libraries will have their own syntax that can be found in their documentation
+            // ? .on will be used with the sass variable to catch formating mistake (spelling errors, semicolons, missing curly brace)
+// * reads you sass and checks for errors
 function css() {
-    return 
+    return gulp.src([scss + 'style.css'])
+    .pipe(sourcemaps.init({loadMaps: true}))
+    .pipe(sass({
+        outputStyle: 'expanded'
+    }).on('error', sass.logError))
+    .pipe(autoprefixer('last 2 versions'))
+    .pipe(sourcemaps.write())
+    .pipe(lineec())
+    .pip(gulp.dest(root))
 }
+
+// * combines your scss files
+function concatCSS() {
+    return gulp.src(cssSRC)
+    .pipe(sourcemaps.init({loadMaps: true, largeFile: true}))
+    .pipe(concat('style.min.css'))
+    .pipe(cleanCSS())
+    .pipe(sourcemaps.write('./maps/'))
+    .pipe(lineec())
+    .pip(gulp.dest(scss));
+}
+
+// * combines and minifies your JS files
+function javascript() {
+    return gulp.src(jsSRC)
+    .pipe(concat('javascriptCombinedFileName.js'))
+    .pipe(uglify())
+    .pipe(lineec())
+    .pipe(gulp.dest(jsDist));
+}
+
+// * minifies your images
+function imgmin() {
+    return gulp.src(imgSRC)
+    .pipe(changed(imgDEST))
+    .pipe(imagemin([
+        imagemin.gifsicle({interlaced: true}),
+        imagemin.jpegtran({progressive: true}),
+        imagemin.optipng({optimizationLevel: 5})
+    ]))
+}
+
+function watch() {
+    browserSync.init({
+        open: 'external',
+        proxy: 'https://localhost/dev',
+        port: 8080,
+    });
+    gulp.watch(styleWatchFiles, gulp.series([css, concatCss]));
+    gulp.watch(jsSRC, javascript);
+    gulp.watch(imgSRC, imagemin);
+    gulp.watch([phpWatchFiles, jsDist + 'devwp.js', scss + 'style.min.css']).on('change', browserSync.reload);
+}
+
+
+// Now that we have changes completed we need to export our file so gulp know what it needs to call and in what order
+exports.css = css;
+exports.concatCSS = concatCSS;
+exports.javascript = javascript;
+exports.watch = watch;
+exports.imgmin = imgmin;
+
+
+
+// Finally we run one task (still with a variable that lets gulp know that we should run theses function)
+const build = gulp.parallel(watch);
+gulp.task('default', build);
